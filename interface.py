@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import simpledialog, Tk
+from tkinter import simpledialog
 
 
 class QLearnDialog(tk.Tk):
@@ -54,7 +54,8 @@ class QLearnDialog(tk.Tk):
                     cb.grid(row=row, column=1)
                     self.entries[key] = var
                 else:
-                    cb = ttk.Combobox(self.dialog, values=self.options[key], width=34)
+                    cb = ttk.Combobox(
+                        self.dialog, values=self.options[key], width=34)
                     cb.set(default)
                     cb.grid(row=row, column=1)
                     self.entries[key] = cb
@@ -110,7 +111,8 @@ class SimulDialog(tk.Toplevel):
             if key in self.options:
                 if isinstance(self.options[key][0], bool):
                     var = tk.BooleanVar(value=bool(default))
-                    cb = ttk.Checkbutton(self, variable=var, onvalue=True, offvalue=False)
+                    cb = ttk.Checkbutton(
+                        self, variable=var, onvalue=True, offvalue=False)
                     cb.grid(row=row, column=1)
                     self.entries[key] = var
                 else:

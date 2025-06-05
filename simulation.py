@@ -20,9 +20,11 @@ Stop = False
 Pause = True
 pause_button = None  # dodaj globalną referencję
 
+
 def stop_callback(event):
     global Stop
     Stop = True
+
 
 def pause_callback(event):
     global Pause, pause_button
@@ -38,18 +40,19 @@ def pause_callback(event):
         pause_button.hovercolor = 'yellow'
     pause_button.ax.figure.canvas.draw_idle()
 
-def air_simul(path_to_file=None, parent=None):
 
+def air_simul(path_to_file=None, parent=None):
     """
     Funkcja do symulacji wahadła lub huśtawki na podstawie danych z pliku.
     Parametry:
-        path_to_file (str): Ścieżka do pliku z danymi. Jeśli None, użyje domyślnego pliku 'Learn_TEST.pkl'.
+        path_to_file (str): Ścieżka do pliku z danymi. Jeśli None, użyje
+        domyślnego pliku 'Learn_TEST.pkl'.
         parent (tk.Tk): Rodzic okna, jeśli jest używane w aplikacji GUI.
     Zwraca:
         None
     """
     if path_to_file is None:
-        path_to_file = 'Learn_TEST.pkl' # Domyślna ścieżka do pliku
+        path_to_file = 'Learn_TEST.pkl'  # Domyślna ścieżka do pliku
     if not os.path.exists(path_to_file):
         print(f"Plik {path_to_file} nie istnieje.")
         sys.exit(1)
@@ -113,7 +116,8 @@ def air_simul(path_to_file=None, parent=None):
     # Siła
     f1, = ax_pend.plot([0, 0], [0, 0], 'b', linewidth=5)
     # Masa
-    f2, = ax_pend.plot([0, 0], [0, 0], 'go', markerfacecolor='black', linewidth=5)
+    f2, = ax_pend.plot([0, 0], [0, 0], 'go',
+                       markerfacecolor='black', linewidth=5)
 
     # Mapa sterowania
     ax_map = plt.axes([0.38, 0.25, 0.58, 0.60])
@@ -123,7 +127,8 @@ def air_simul(path_to_file=None, parent=None):
     map_img = ax_map.imshow(U_2*0 if controlLQR else U_2,
                             aspect='auto', cmap=cmap, origin='lower')
     plt.colorbar(map_img, ax=ax_map)
-    ax_map.set_title('Sterowanie u(θ, dθ/dt)' if not controlLQR else 'Sterowanie LQR')
+    ax_map.set_title(
+        'Sterowanie u(θ, dθ/dt)' if not controlLQR else 'Sterowanie LQR')
     ax_map.set_xticks([0, n1//2, n1-1])
     ax_map.set_xticklabels(['-π', '0', 'π'])
     ax_map.set_yticks([0, n2//2, n2-1])
@@ -147,8 +152,8 @@ def air_simul(path_to_file=None, parent=None):
 
     # Tekst
     txt = ax_pend.text(-2, -5, '', fontsize=10, family='monospace')
-    txt2 = ax_map.text(-0.1, -0.15, DynName, fontsize=10, fontweight='bold',
-                        ha='left', va='top', transform=ax_map.transAxes)
+    _ = ax_map.text(-0.1, -0.15, DynName, fontsize=10, fontweight='bold',
+                    ha='left', va='top', transform=ax_map.transAxes)
 
     x = np.array(x_InitCond, dtype=float)
     t = 0.0
@@ -166,7 +171,8 @@ def air_simul(path_to_file=None, parent=None):
             A, B = aw_matrices_AB(DynamicsAct, x, t, u, 2, 1)
             RR = np.array([[1.0]])  # Macierz wag dla sterowania
             QQ = np.array([[1.0, 0.0], [0.0, 1.0]])  # Macierz wag dla stanu
-            # Rozwiązanie równania Riccatiego: A^T P + P A - P B R⁻¹ B^T P + Q = 0
+            # Rozwiązanie równania Riccatiego:
+            # A^T P + P A - P B R⁻¹ B^T P + Q = 0
             # Algorytm CARE (Continuous-time Algebraic Riccati Equation)
             P = care(A, B, QQ, RR)
             # Wyliczenie wzmocnienia sprzężenia zwrotnego: K = R⁻¹ B^T P
@@ -190,15 +196,18 @@ def air_simul(path_to_file=None, parent=None):
         f.set_data([0, -PendLen * se], [0, PendLen * ce])
         color = 'b' if u > 0 else 'r' if u < 0 else 'w'
         f1.set_color(color)
-        f1.set_data([-PendLen * se, -PendLen * se + u * ce * (1 - SwingProblem)],
-                    [PendLen * ce, PendLen * ce + u * se * (1 - SwingProblem)])
-        f2.set_data([-PendLen * se, -PendLen * se], [PendLen * ce, PendLen * ce])
+        f1.set_data([-PendLen * se, -PendLen * se
+                     + u * ce * (1 - SwingProblem)],
+                    [PendLen * ce, PendLen * ce
+                     + u * se * (1 - SwingProblem)])
+        f2.set_data([-PendLen * se, -PendLen * se],
+                    [PendLen * ce, PendLen * ce])
 
         # Aktualizacja ścieżki na mapie
         k1_x = state_global_index(x, x1, x2, n2)
         newx, newy = np.unravel_index(indices=int(k1_x), shape=(n1, n2))
         pathx.append(newx)
-        pathy.append(newy)  
+        pathy.append(newy)
 
         if trace:
             # Rysowanie śladu na mapie
@@ -212,7 +221,8 @@ def air_simul(path_to_file=None, parent=None):
             n_points = len(pathx)
             for i in range(max(0, n_points - N_fade), n_points):
                 alpha = (i - (n_points - N_fade)) / N_fade  # od 0 do 1
-                dot = ax_map.plot(pathx[i], pathy[i], '.w', markersize=10, alpha=alpha)[0]
+                dot = ax_map.plot(pathx[i], pathy[i],
+                                  '.w', markersize=10, alpha=alpha)[0]
                 ax_map._fade_dots.append(dot)
 
         # Aktualizacja tekstu
@@ -220,7 +230,7 @@ def air_simul(path_to_file=None, parent=None):
             f'θ = {x[0]*180.0/np.pi:8.4f} [deg]\n'
             f'dθ/dt = {x[1]:8.4f} [rad/s]\n'
             f'u = {u:8.4f} [N]\n'
-            f't = {t:8.4f} [s]'    
+            f't = {t:8.4f} [s]'
         )
 
         # Aktualizacja czasu
@@ -233,6 +243,7 @@ def air_simul(path_to_file=None, parent=None):
             break
 
     plt.close(fig)
+
 
 if __name__ == "__main__":
     air_simul()

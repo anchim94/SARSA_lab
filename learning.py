@@ -1,12 +1,10 @@
-# %%
 import numpy as np
-import time 
+import time
 import matplotlib.pyplot as plt
 import pickle
 from matplotlib.widgets import Button
-# import matplotlib.cm as cm
 
-# %%
+
 from dynamics import (
     dynamics0,
     dynamics1,
@@ -50,13 +48,14 @@ controls = {
 
 controls_names = list(controls.keys())
 
-# %%
 # Globalny sygnał zatrzymania
 Stop = False
+
 
 def Stop_Callback(event):
     global Stop
     Stop = True
+
 
 def air_qlearn():
     global Stop
@@ -66,7 +65,7 @@ def air_qlearn():
         answers = enter_interface(tasks_names, controls_names)
     except Exception as e:
         print(f"Błąd podczas wprowadzania danych: {e}")
-        return 
+        return
 
     StudInd = answers[0]
     DynamicsAct = tasks[answers[1]]
@@ -83,6 +82,7 @@ def air_qlearn():
     epsilDecay = float(answers[11])
     dt = float(answers[12])
     maxEpisodes = 15000  # liczba epizodów
+
     # Sprawdzenie poprawności danych wejściowych
     if not (0 < epsil <= 1):
         raise ValueError("Epsilon must be in the range (0, 1].")
@@ -99,13 +99,16 @@ def air_qlearn():
     if not (len(control) > 0):
         raise ValueError("Control array must not be empty.")
     if not (DynamicsName in tasks_names):
-        raise ValueError(f"DynamicsName must be one of the predefined tasks: {tasks_names}.")
+        raise ValueError(
+            f"DynamicsName must be one of the predefined tasks: {tasks_names}.")
     if not (answers[2] in controls_names):
-        raise ValueError(f"Control must be one of the predefined controls: {controls_names}.")
+        raise ValueError(
+            f"Control must be one of the predefined controls: "
+            f"{controls_names}.")
 
     x_InitCond = [np.pi, 1.0 if DynamicsName == 'Huśtawka' else 0.0]
 
-    m_u = len(control) # liczba dysktretnych wartości sterowania
+    m_u = len(control)  # liczba dysktretnych wartości sterowania
 
     # Dyskretyzacja przestrzeni stanu X
     # X1 - kąt
@@ -114,8 +117,8 @@ def air_qlearn():
     dx2 = 0.05
     x1 = np.arange(-np.pi, np.pi + dx1, dx1)
     x2 = np.arange(-np.pi, np.pi + dx2, dx2)
-    n_x1 = len(x1) # liczba dyskretnych wartości kąta
-    n_x2 = len(x2) # liczba dyskretnych wartości prędkości kątowej
+    n_x1 = len(x1)  # liczba dyskretnych wartości kąta
+    n_x2 = len(x2)  # liczba dyskretnych wartości prędkości kątowej
 
     # Funkcja nagrody
     rx = np.array([
@@ -123,11 +126,12 @@ def air_qlearn():
         for i in range(n_x1)
         for j in range(n_x2)
     ])
-    ru = -Ru1 * control**2 # nagroda za sterowanie
+    ru = -Ru1 * control**2  # nagroda za sterowanie
 
-    Q = np.zeros((n_x1 * n_x2, m_u)) # Q-funkcja inicjalizacja (liczba stanów x liczba sterowań)
-    V = np.zeros(n_x1 * n_x2) # V-funkcja inicjalizacja (wektor liczba stanów)
-    U = np.zeros(n_x1 * n_x2) # Sterowanie (wektor liczba stanów)
+    # Q-funkcja inicjalizacja (liczba stanów x liczba sterowań)
+    Q = np.zeros((n_x1 * n_x2, m_u))
+    V = np.zeros(n_x1 * n_x2)  # V-funkcja inicjalizacja (wektor liczba stanów)
+    U = np.zeros(n_x1 * n_x2)  # Sterowanie (wektor liczba stanów)
     Vmean = []
     dVmean = []
     Qmean = []
@@ -138,7 +142,8 @@ def air_qlearn():
     fig.canvas.manager.set_window_title(f"Uczenie Q dla {DynamicsName}")
 
     # Dodaj przycisk Stop
-    stop_ax = fig.add_axes([0.81, 0.025, 0.1, 0.04])  # [left, bottom, width, height]
+    # [left, bottom, width, height]
+    stop_ax = fig.add_axes([0.81, 0.025, 0.1, 0.04])
     stop_button = Button(stop_ax, 'Stop', color='red', hovercolor='tomato')
     stop_button.on_clicked(Stop_Callback)
 
@@ -149,25 +154,29 @@ def air_qlearn():
     start_time = time.time()  # start pomiaru czasu
 
     for episode in range(maxEpisodes):
-        x = np.copy(x_InitCond) # inicjalizacja stanu
+        x = np.copy(x_InitCond)  # inicjalizacja stanu
 
         # iterowanie -> uczenie
         for timestep in range(maxit):
-            k_x = state_global_index(x, x1, x2, n_x2) # wyznaczenie indeksu stanu
+            # wyznaczenie indeksu stanu
+            k_x = state_global_index(x, x1, x2, n_x2)
 
             if np.random.rand() > epsil:
                 # Eksploatacja
-                k_u = np.argmax(Q[k_x]) # wybór sterowania na podstawie Q-funkcji
+                # wybór sterowania na podstawie Q-funkcji
+                k_u = np.argmax(Q[k_x])
             else:
                 # Eksploracja
-                k_u = np.random.randint(m_u) # wybór sterowania losowo
+                k_u = np.random.randint(m_u)  # wybór sterowania losowo
 
-            u = control[k_u] # sterowanie
-            x = rk_4(DynamicsAct, dt, x, u) # rozwiązanie
+            u = control[k_u]  # sterowanie
+            x = rk_4(DynamicsAct, dt, x, u)  # rozwiązanie
             x[0] = normalize_fi(x[0])
-            k1_x = state_global_index(x, x1, x2, n_x2) # wyznaczenie indeksu stanu po wykonaniu sterowania
+            # wyznaczenie indeksu stanu po wykonaniu sterowania
+            k1_x = state_global_index(x, x1, x2, n_x2)
 
-            Q[k_x, k_u] += alpha * (rx[k1_x] + ru[k_u] + gamma * np.max(Q[k1_x]) - Q[k_x, k_u])
+            Q[k_x, k_u] += alpha * \
+                (rx[k1_x] + ru[k_u] + gamma * np.max(Q[k1_x]) - Q[k_x, k_u])
 
             epsil *= epsilDecay
 
@@ -185,7 +194,7 @@ def air_qlearn():
 
         for k in range(n_x1 * n_x2):
             U[k] = control[np.argmax(Q[k, :])]
-            
+
         if episode % 10 == 0:
             with open(f'Learn_{StudInd}.pkl', 'wb') as f:
                 pickle.dump({
@@ -201,18 +210,22 @@ def air_qlearn():
                     'control': control
                 }, f)
 
-
             # Przekształcenie U i V do macierzy 2D dla wykresów
             U_2 = U.reshape((n_x1, n_x2)).T
             V_2 = V.reshape((n_x1, n_x2)).T
 
             # Aktualizacja wykresów
-            fig.suptitle(f"Uczenie Q dla {DynamicsName} - Epizod {episode}/{maxEpisodes}", fontsize=14)
-            
+            fig.suptitle(
+                f"Uczenie Q dla {DynamicsName} - "
+                f"Epizod {episode}/{maxEpisodes}",
+                fontsize=14
+            )
+
             # Wykres Sterowania
             axs[0, 0].clear()
             cmap = plt.get_cmap('jet', len(control))
-            axs[0, 0].set_prop_cycle(color=cmap(np.linspace(0, 1, len(control))))
+            axs[0, 0].set_prop_cycle(color=cmap(
+                np.linspace(0, 1, len(control))))
             c1 = axs[0, 0].contourf(U_2, cmap=cmap)
             axs[0, 0].set_title('Sterowanie u(θ, dθ/dt)')
             axs[0, 0].set_xlabel('Kąt (θ) [rad]')
@@ -232,8 +245,8 @@ def air_qlearn():
             axs[0, 1].set_xticklabels(['-π', '0', 'π'])
             axs[0, 1].set_yticks([0, len(x2)//2, len(x2)-1])
             axs[0, 1].set_yticklabels(['-π', '0', 'π'])
-            
-           # Odświeżanie colorbarów
+
+            # Odświeżanie colorbarów
             if cbar1 is not None:
                 cbar1.remove()
             if cbar2 is not None:
@@ -280,7 +293,8 @@ def air_qlearn():
                 f"Ru1: {Ru1:5.3f}\n"
 
             )
-            axs[1, 1].text(0.05, 0.99, info_text, va='top', ha='left', fontsize=10, family='monospace')
+            axs[1, 1].text(0.05, 0.99, info_text, va='top',
+                           ha='left', fontsize=10, family='monospace')
 
             plt.pause(0.01)
 
@@ -292,6 +306,7 @@ def air_qlearn():
             break
 
     plt.close(fig)
+
 
 if __name__ == "__main__":
     air_qlearn()

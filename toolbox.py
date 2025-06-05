@@ -3,7 +3,8 @@ import numpy as np
 
 def state_global_index(x, x1, x2, n_x2):
     """
-    Wyznaczenie globalnego indeksu w macierzy stanu na podstawie wartości stanu X.
+    Wyznaczenie globalnego indeksu w macierzy stanu na podstawie wartości
+    stanu X.
 
     Argumenty:
         x (array-like): stan X [kąt, prędkość kątowa]

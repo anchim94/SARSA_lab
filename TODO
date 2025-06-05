@@ -1,6 +1,7 @@
 # TODO
 
 - naprawić model ?? z odbojnikami
+- sprawdzić huśtawkę czy jest dobrze zaimplementowana (masa??)
 
 # Niski priorytet
 - włączanie LQR - defaultowa wartość nie działa
