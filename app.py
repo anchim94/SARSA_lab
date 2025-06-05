@@ -75,7 +75,7 @@ class MainApp(tk.Tk):
             # Możesz przekazać ścieżkę pliku do air_simul, jeśli funkcja to obsługuje
             try:
                 # Jeśli air_simul przyjmuje ścieżkę pliku, przekaż ją tutaj
-                air_simul(self.sim_file.get())  # lub air_simul(self.sim_file.get())
+                air_simul(self.sim_file.get(), parent=self)
                 messagebox.showinfo("Info", "Symulacja zakończona.")
             except Exception as e:
                 messagebox.showerror("Błąd", f"Wystąpił błąd podczas symulacji:\n{e}")
@@ -84,6 +84,6 @@ class MainApp(tk.Tk):
 
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support() # Dla kompatybilności z PyInstaller
+    multiprocessing.freeze_support() 
     app = MainApp()
     app.mainloop()

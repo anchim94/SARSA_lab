@@ -38,12 +38,15 @@ def pause_callback(event):
         pause_button.hovercolor = 'yellow'
     pause_button.ax.figure.canvas.draw_idle()
 
-def air_simul(path_to_file=None):
+def air_simul(path_to_file=None, parent=None):
 
     """
     Funkcja do symulacji wahadła lub huśtawki na podstawie danych z pliku.
     Parametry:
         path_to_file (str): Ścieżka do pliku z danymi. Jeśli None, użyje domyślnego pliku 'Learn_TEST.pkl'.
+        parent (tk.Tk): Rodzic okna, jeśli jest używane w aplikacji GUI.
+    Zwraca:
+        None
     """
     if path_to_file is None:
         path_to_file = 'Learn_TEST.pkl' # Domyślna ścieżka do pliku
@@ -56,7 +59,7 @@ def air_simul(path_to_file=None):
     Pause = True
 
     try:
-        answers = enter_interface_simulation()
+        answers = enter_interface_simulation(parent=parent)
     except Exception as e:
         print(f"Błąd podczas wprowadzania danych: {e}")
         sys.exit(1)
@@ -91,7 +94,7 @@ def air_simul(path_to_file=None):
         SwingProblem = 1
 
     x_InitCond = [fi_0, om_0]
-    U_2 = U.reshape((n1, n2)).T  # (n2, n1) jak w Matlabie
+    U_2 = U.reshape((n1, n2)).T
 
     # --- Ustaw wykres ---
     fig = plt.figure(figsize=(8, 5))
@@ -165,7 +168,7 @@ def air_simul(path_to_file=None):
             QQ = np.array([[1.0, 0.0], [0.0, 1.0]])  # Macierz wag dla stanu
             # Rozwiązanie równania Riccatiego: A^T P + P A - P B R⁻¹ B^T P + Q = 0
             # Algorytm CARE (Continuous-time Algebraic Riccati Equation)
-            P, _, _ = care(A, B, QQ, RR)
+            P = care(A, B, QQ, RR)
             # Wyliczenie wzmocnienia sprzężenia zwrotnego: K = R⁻¹ B^T P
             K = np.linalg.inv(RR) @ B.T @ P
             u = -K @ x.T  # Sterowanie LQR
@@ -211,8 +214,6 @@ def air_simul(path_to_file=None):
                 alpha = (i - (n_points - N_fade)) / N_fade  # od 0 do 1
                 dot = ax_map.plot(pathx[i], pathy[i], '.w', markersize=10, alpha=alpha)[0]
                 ax_map._fade_dots.append(dot)
-        
-        # pathmap.set_data(pathx, pathy)
 
         # Aktualizacja tekstu
         txt.set_text(

@@ -1,9 +1,10 @@
 # TODO
 
+- naprawić model ?? z odbojnikami
+
 # Niski priorytet
 - włączanie LQR - defaultowa wartość nie działa
 - rozważ zapisywanie w jakiś sposób wartości defaultowych z poprzedniego uruchomienia??
 - uzupełnij opisy merytoryczne interfesju wejściowego
 - uzupełnij opisy merytoryczne kroków
-- dodaj opcje równoległych obliczeń?
 - suwaki do interfejsu (czy warto)
